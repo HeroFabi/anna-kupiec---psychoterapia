@@ -1,9 +1,23 @@
-// Querying with "sanityFetch" will keep content automatically updated
-// Before using it, import and render "<SanityLive />" in your layout, see
-// https://github.com/sanity-io/next-sanity#live-content-api for more information.
-import { defineLive } from "next-sanity/live";
 import { client } from './client'
 
-export const { sanityFetch, SanityLive } = defineLive({
-  client,
-});
+export type SanityFetchProps = {
+  query: string
+  params?: Record<string, unknown>
+  tags?: string[]
+}
+
+export const sanityFetch = async <QueryResponse>({
+  query,
+  params = {},
+  tags = [],
+}: SanityFetchProps): Promise<QueryResponse> => {
+  return client.fetch<QueryResponse>(query, params, {
+    next: {
+      revalidate: process.env.NODE_ENV === 'development' ? 30 : 3600,
+      tags,
+    },
+  })
+}
+
+// Placeholder for SanityLive component if ever needed in older next-sanity versions
+export const SanityLive = () => null
